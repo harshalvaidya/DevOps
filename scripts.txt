@@ -1,0 +1,112 @@
+===FORMAT===
+
+Hi All,
+<br><br>
+This mail is auto generated as a part of CICD pipeline execution of project ZM_SIEBEL.
+<br>
+<br><b><font color="BLUE">Build Details</font></b><br>
+Project name: ${JOB_NAME}<br>
+Build No: ${BUILD_NUMBER}<br>
+Build Status: ${BUILD_STATUS}<br>
+<br>
+<br><b><font color="BLUE">Build Log</font></b></br>
+${PROJECT_URL}<br>
+
+<br>
+Regards,<br>
+ZM CICD Team
+
+==HEADING FORMAT===
+
+<br><b><font color="RED">AUTHOR : HARSHAL VAIDYA </font></b><br>
+<br><br>This is a <i>dynamic email job</i> that sends out customized emails for the following pipeline status:<br>
+1) <b><font color="BLUE">STARTED</font></b> (Status to be passed from initial job in the pipeline)<br>
+2) <b><font color="BLUE">COMPLETED</font></b> (Status to be passed from the last jobn in the pipeline)<br>
+3) <b><font color="BLUE">FAILED </font></b> (Status to be passed from any job that needs to send a notification on failure)<br>
+<br><br>
+
+Parameters to be passed to this job from any calling job are:<br>
+a) <b><font color="BLUE">PIPELINE_STATUS=[<i>'STARTED', 'COMPLETED', 'FAILED'</i>]</font></b><br>
+b) <b><font color="BLUE">ENVVARS_PATH=[<i>path to the ENVVARS FILE on Jenkins master</i>]</font></b><br>
+c) <b><font color="BLUE">PRJ_NAME=$JOB_NAME </font></b>[<i>This is name of the upstream job to be passed in failure notifications, on failure</i>]<br>
+d) <b><font color="BLUE">PRJ_BUILD_NBR=$BUILD_NUMBER </font></b>[<i>This is the build number of the upstream job to be passed in failure notifications, on failure</i>]<br>
+
+
+<br><br><b>NOTE: For this job to execute on the same node as the upstream job, <i>Build on the same node</i> parameter should be selected in the <i>Post Build Actions --> Trigger parameterized build on other projects</i> section, where the <i>Dynamic_Email_Notification job</i> is being called</b>
+<br><br>
+
+For more information on this job, contact author
+<a href="mailto:harshal.vaidya2@cognizant.com">Harshal Vaidya</a>.<br> 
+
+<br><br>
+
+===BUILD SHELL===
+
+echo ${PIPELINE_ERROR}
+echo "PIPELINE_ERROR=${PIPELINE_ERROR}" >> $ENVVARS_PATH
+
+===EXECUTE SHELL===
+
+#!/bin/bash
+set -v
+#sourcing the envvars properties file
+source ${ENVVARS_PATH}
+echo PIPELINE_ERROR=${PIPELINE_ERROR}
+
+#calculating the duration of the build
+echo $START_TIME
+END_TIME=$(date +%s) 
+echo $END_TIME
+##### Adding the value for 'duration' parameter in the envvars properties file #####
+duration=$((END_TIME-START_TIME))
+echo "duration_time=$(($duration / 60)) minutes and $(($duration % 60)) seconds." >> ${ENVVARS_PATH}
+
+##### Below code is required since ENV and ENVIRONMENT are alternatively used for setting environment across applications ####
+##### Checking if ENVIRONMENT valriable is present in properties file #####
+ENV=`grep -w ENV $ENVVARS_PATH`
+if [[ -z $ENV ]]; then
+        echo "ENV variable not found in properties file. Fetching ENV value from ENVIRONMENT variable";
+        ENV=`grep -w ENVIRONMENT $ENVVARS_PATH | cut -d"=" -f2`
+        echo ENV=$ENV
+        ##### Concatenating the ENVIRONMENT parameter to the properties file #####
+        echo ENV=${ENV} >> $ENVVARS_PATH
+else
+        echo "ENV parameter found in properties file == $ENV";
+fi
+
+======================================
+
+#!/bin/bash
+#AUTHOR : HARSHAL
+#PURPOSE: FAILS THE BUILD IF ${PIPELINE_STATUS} IS "FAILED".
+
+#displaying the value of properties for the current build
+echo "VARIABLES FOR THE CURRENT BUILD: "
+#echo PIPELINE_ERROR=${PIPELINE_ERROR} >> $ENVVARS_PATH
+echo ENVVARS_PATH: ${ENVVARS_PATH}
+echo APP: ${APP}
+echo ENV: ${ENV}
+echo PIPELINE_TYPE: ${PIPELINE_TYPE} 
+echo PIPELINE_STATUS: ${PIPELINE_STATUS} 
+echo PIPELINE_URL: ${PIPELINE_URL}
+echo PRJ_BUILD_NBR: ${PRJ_BUILD_NBR}
+echo PRJ_NAME: ${PRJ_NAME}
+echo PIPELINE_STATUS: ${PIPELINE_STATUS}
+
+echo PIPELINE_STATUS: ${PIPELINE_STATUS}
+
+if [[ $PIPELINE_STATUS == "FAILED" ]]; then
+	echo "status is: failure"
+    exit 1;
+elif [[ $PIPELINE_STATUS == "COMPLETED" ]]; then
+	echo "status is: completed"
+elif [[ $PIPELINE_STATUS == "STARTED" ]]; then
+	echo "status is: started"
+else
+	echo "status: none selected"
+fi
+
+
+
+
+
