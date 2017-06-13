@@ -1,0 +1,21 @@
+==REMOVE EXISTING STUFF===
+Remove-Item -path "D:\Jenkins_Slave_11.2\workspace\Selenium_Automation_Regression\DLCM_REGRESSION\src\main\resources\Automation_Execution_Result\*" -recurse -force 
+
+==SET RUNTIMEPATH AND EXECUTE JAR===
+
+set path=%path%;C:\Program Files (x86)\Firerfox
+echo "Executing selenium JAR"
+pwd
+java -jar Automation_new_jar.jar DLCM
+
+===BATCH SCRIPT TO GET LATEST FOLDER/LATEST FILES===
+
+$Results_Path = "D:\Jenkins_Slave_11.2\workspace\Selenium_Automation_Regression\DLCM_REGRESSION\src\main\resources\Automation_Execution_Result\"
+$var_folder = Get-ChildItem "$Results_Path" | sort CreationTime -desc | Select-Object -First 1
+$var_file = Get-ChildItem -Path $Results_Path$var_folder| Sort-Object LastAccessTime -Descending | Select-Object -First 1
+echo VAR_FOLDER=$Results_Path$var_folder
+echo VAR_FILE=$var_file
+echo VAR_FILE=$var_file VAR_FOLDER=$Results_Path$var_folder | Out-File env.properties -Encoding ASCII
+
+===INJECTING VARIABLES & CALLING IN HTML PUBLISH PLUGIN====
+
