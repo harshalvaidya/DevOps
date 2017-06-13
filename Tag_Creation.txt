@@ -1,8 +1,9 @@
 #!/bin/bash
-#: <<'end_long_comment'
-echo "BEFORE: $TMPDIR"
-export TMPDIR="/u01/tmp"
-echo "AFTER: $TMPDIR"
+# Just in case disk space issues encounteres
+#echo "BEFORE: $TMPDIR"
+#export TMPDIR="/u01/tmp"
+#echo "AFTER: $TMPDIR"
+#APP name is replaced APP_NAME
 
 SVNPath=/usr/bin/svn;
 
@@ -35,13 +36,12 @@ for i in ${ReleaseList}
 do
 MainRelease=`echo ${i} | cut -d'-' -f3 | awk -F'_' '{ print $1 }' | sed 's/[a-zA-Z]//g'`
         if [[ "${MainRelease}" > "${MaxMainRelease}" ]]; then
-                SubReleaseList=`echo "cat svn/index/dir/@name" | xmllint --nocdata --shell "ReleaseFolderList.xml" | grep ZM-Siebel-R${MainRelease}_* | sed -e 's/-------/ /g' -e 's/name=//g' -e 's/\"/ /g'`
+                SubReleaseList=`echo "cat svn/index/dir/@name" | xmllint --nocdata --shell "ReleaseFolderList.xml" | grep APP_NAME-R${MainRelease}_* | sed -e 's/-------/ /g' -e 's/name=//g' -e 's/\"/ /g'`
 
                         for j in ${SubReleaseList}
                         do
                                 SubRelease=`echo ${j} | cut -d'-' -f3 | awk -F'_' '{ print $2 }' | sed 's/[a-zA-Z]//g'`
                                 if [[ "${SubRelease}" != "" ]]; then
-
                                 MaxMainRelease=${MainRelease}
                                  MaxSubRelease=0
                                 if [[ "${SubRelease}" > "${MaxSubRelease}" ]]; then
@@ -52,10 +52,10 @@ MainRelease=`echo ${i} | cut -d'-' -f3 | awk -F'_' '{ print $1 }' | sed 's/[a-zA
     fi
 done
 echo "#########################"
-echo "Latest Repository Name: ZM-Siebel-R${MaxMainRelease}_${MaxSubRelease}"
+echo "Latest Repository Name: APP_NAME-R${MaxMainRelease}_${MaxSubRelease}"
 echo "#########################"
 #LatestModifiedSVNFolder="${SVN_Location}/${ReleaseFolderPrefix}_R${MaxMainRelease}_${MaxSubRelease}";
-LatestModifiedSVNFolder="${SVN_Location}/ZM-Siebel-R${MaxMainRelease}_${MaxSubRelease}";
+LatestModifiedSVNFolder="${SVN_Location}/APP_NAME-R${MaxMainRelease}_${MaxSubRelease}";
 #MODIFIED FOR SVN TAG END
 echo "#########################"
 echo "LatestModifiedSVNFolder: ${LatestModifiedSVNFolder}";
