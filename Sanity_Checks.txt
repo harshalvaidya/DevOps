@@ -1,0 +1,144 @@
+@echo off
+SETLOCAL enableextensions enabledelayedexpansion
+
+set diskspaceD=2684354560
+echo MinimumSpaceD: %diskspaceD%
+
+set diskspaceC=1073741824
+echo MinimumSpaceC: %diskspaceC%
+
+for /f "tokens=3" %%a in ('dir d: /-c ^| find /i "bytes free"') do set FreeDiskSpaceD=%%a
+echo FreeDiskSpaceD: %FreeDiskSpaceD%
+
+:: Fetching the disk space in variable FreeDiskSpace
+for /f "tokens=3" %%a in ('dir c: /-c ^| find /i "bytes free"') do set FreeDiskSpaceC=%%a
+echo FreeDiskSpaceC: %FreeDiskSpaceC%
+
+:: Checking if the free diskspace is more than 5368709120 bytes(5GB) and C drive is more than 
+echo Checking if the free diskspace in D drive is more than 2684354560 bytes(2.5GB) 
+echo Checking if the free diskspace in C drive is more than 1073741824 bytes(1GB)
+
+if %FreeDiskSpaceD% LSS %diskspaceD% (
+set FreeDiskSpaceResultD=FAILURE
+echo FAILURE - Not enough space
+echo FreeDiskSpaceResultD: !FreeDiskSpaceResultD!
+)
+
+if %FreeDiskSpaceC% LSS %diskspaceC% (
+set FreeDiskSpaceResultC=FAILURE
+echo FAILURE - Not enough space
+echo FreeDiskSpaceResultC: !FreeDiskSpaceResultC!
+)
+
+if %FreeDiskSpaceD% GEQ %diskspaceD% if %FreeDiskSpaceC% GEQ %diskspaceC% (
+set FreeDiskSpaceResult=PASS
+echo PASS - sufficient disk space available in both the drives
+echo FreeDiskSpaceResult: !FreeDiskSpaceResult! 
+)
+
+:: Checking if the Siebel service is running or not
+echo Checking if the Siebel service is running or not
+::for /f %%a in ('tasklist /fi "imagename eq siebsvc.exe"') do set ProcessRunning=%%a
+
+for /f "tokens=3" %%a in ('tasklist /svc /fi "services eq siebsrvr_OCRM_SIT2_OCRM_SIT2APP"') do set ProcessRunning=%%a
+
+echo ProcessRunning: !ProcessRunning!
+
+if NOT %ProcessRunning% == "" (
+echo PASS - Siebel service %ProcessRunning% running
+set ProcessRunningResult=PASS
+echo ProcessRunningResult: !ProcessRunningResult!
+)
+if %ProcessRunning% == "" (
+echo FAILURE - Siebel service not running
+set ProcessRunningResult=FAILURE
+echo ProcessRunningResult: !ProcessRunningResult!
+)
+
+endlocal
+
+
+
+===== SERVICES ON WINDOWS ====
+
+
+:: Checking if the ARA service is running or not
+echo Checking if the ARA service is running or not
+::for /f %%a in ('tasklist /fi "imagename eq UCYBSMgr.exe"') do set ProcessRunning=%%a
+
+for /f "tokens=3" %%a in ('tasklist /svc /fi "services eq UC4.ServiceManager.Automic"') do set ProcessRunning=%%a
+
+if NOT %ProcessRunning% == "" (
+echo PASS - ARA service %ProcessRunning% running
+set ProcessRunningResult=PASS
+echo ProcessRunning: !ProcessRunningResult!
+)
+if %ProcessRunning% == "" (
+echo FAILURE - ARA service not running
+set ProcessRunningResult=FAILURE
+echo ProcessRunningResult: !ProcessRunningResult!
+)
+
+endlocal
+
+
+=== NEW SERVICES ON WINDOWS ====
+
+@Echo Off
+Set ServiceName=UC4.ServiceManager
+
+
+SC queryex "%ServiceName%"|Find "STATE"|Find /v "RUNNING">Nul&&(
+    echo %ServiceName% not running 
+    echo Start %ServiceName%
+
+    Net start "%ServiceName"%>nul||(
+        Echo "%ServiceName%" wont start 
+        exit /b 1
+    )
+    echo "%ServiceName%" started
+    exit /b 0
+)||(
+    echo "%ServiceName%" working
+    exit /b 0
+)
+
+=== SOLARIS ===
+
+
+Environment=SIT2
+echo "Environment: $Environment"
+
+echo "$Environment - Checking if the agent is running";
+agentRunning=`ps -ef | grep "ucybsmgr" | grep "ARA_P" | wc -l`;
+echo "$ENVironment - agentRunning: $agentRunning";
+if (( "$agentRunning" > "0" )); then
+        agentRunningResult="PASS";
+        echo "$Environment - agentRunningResult: $agentRunningResult";
+        else
+        echo "The ARA Agent is not running"
+	echo "Stopping agent....."
+/usr/local/bin/sudo su - oracle <<eof
+bash -x /u01/automic_m/automic_p/agent.sh stop
+bash -x /u01/automic_m/automic_p/agent.sh status
+eof
+sleep 5
+echo "Starting agent....."
+/usr/local/bin/sudo su - oracle <<eof
+bash -x /u01/automic_m/automic_p/agent.sh start
+bash -x /u01/automic_m/automic_p/agent.sh status
+eof
+sleep 5
+	agentRunning=`ps -ef | grep "ucybsmgr" | grep "ARA_P" | wc -l`;
+        echo "$ENVironment - agentRunning: $agentRunning"
+if (( "$agentRunning" > "0" )); then
+	agentRunningResult="PASS";
+fi
+
+fi
+
+if [[ $agentRunningResult == "PASS" ]]; then
+        echo "$Environment - Sanity check successful"
+        else
+        echo "$Environment - Sanity check failed."
+fi] ...

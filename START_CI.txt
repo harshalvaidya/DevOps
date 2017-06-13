@@ -1,0 +1,70 @@
+=== START CI ===
+
+#!/bin/bash
+#: <<'end_long_comment'
+
+
+DIRECTORY="/u01/app/Cordys/Automation/ARA11.X/${ENV}"
+
+if [ ! -d "$DIRECTORY" ]; then
+  # Control will enter here if $DIRECTORY doesn't exist.
+  mkdir "${DIRECTORY}"
+  chmod 777 "${DIRECTORY}"
+fi
+
+
+###### values required for dynamimc email notification job  ############
+START_TIME=$(date +%s)
+#PIPELINE_URL="http://l0000048.kpnnl.local:1337/view/ZM_SIEBEL/job/ZM_Seibel_ARA_11/job/2%20-%20SIT%20jobs/view/ZM_Siebel_11_CI_SIT_Pipeline/"
+echo APP=${APP}
+echo ENV=${ENV}
+echo PIPELINE_TYPE=${PIPELINE_TYPE}
+echo PIPELINE_URL=${PIPELINE_URL}
+echo START_TIME=${START_TIME}
+echo PRJ_EMAIL_TO_LIST=${PRJ_EMAIL_TO_LIST}
+########################################################################
+
+echo DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE}
+echo SVN_PACKAGE=${SVN_PACKAGE}
+echo SVN_PKG_NAME=${SVN_PKG_NAME}
+echo REL_NBR=${REL_NBR}
+echo REV_NBR=${REV_NBR}
+echo NR_OF_PROCESSES=${NR_OF_PROCESSES}
+echo DISK_SPACE=${DISK_SPACE}
+echo RUN_DELIVERY=${RUN_DELIVERY}
+echo DELAY_TIME=${DELAY_TIME}
+
+
+##### values required for dynamimc email notification job ###########
+echo ENV=${ENV} > ${DIRECTORY}/envvars
+echo APP=${APP} >> ${DIRECTORY}/envvars
+echo PIPELINE_TYPE=${PIPELINE_TYPE} >> ${DIRECTORY}/envvars
+echo PIPELINE_URL=${PIPELINE_URL} >> ${DIRECTORY}/envvars
+echo START_TIME=${START_TIME} >> ${DIRECTORY}/envvars
+echo PRJ_NAME=${JOB_NAME} >> ${DIRECTORY}/envvars
+echo PRJ_BUILD_NBR=${BUILD_NUMBER} >> ${DIRECTORY}/envvars
+echo PRJ_EMAIL_TO_LIST=${PRJ_EMAIL_TO_LIST} >> ${DIRECTORY}/envvars
+######### Modified #####
+PIPELINE_STATUS1=""
+echo PIPELINE_STATUS1=${PIPELINE_STATUS1} >> /u01/app/Cordys/Automation/ARA11.X/${ENV}/envvars
+MESSAGE=""
+echo MESSAGE=${MESSAGE} >> /u01/app/Cordys/Automation/ARA11.X/${ENV}/envvars
+PIPELINE_ERROR=""
+echo PIPELINE_ERROR=${PIPELINE_ERROR} >> /u01/app/Cordys/Automation/ARA11.X/${ENV}/envvars
+PACKAGE_VALIDATION=""
+echo PACKAGE_VALIDATION=${PACKAGE_VALIDATION} >> /u01/app/Cordys/Automation/ARA11.X/${ENV}/envvars
+#######################################################################
+
+echo DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE} >> ${DIRECTORY}/envvars
+echo SVN_PACKAGE=${SVN_PACKAGE} >> ${DIRECTORY}/envvars
+echo SVN_PKG_NAME=${SVN_PKG_NAME} >> ${DIRECTORY}/envvars
+echo REL_NBR=${REL_NBR} >> ${DIRECTORY}/envvars
+echo REV_NBR=${REV_NBR} >> ${DIRECTORY}/envvars
+echo NR_OF_PROCESSES=${NR_OF_PROCESSES} >> ${DIRECTORY}/envvars
+echo DISK_SPACE=${DISK_SPACE} >> ${DIRECTORY}/envvars
+echo RUN_DELIVERY=${RUN_DELIVERY} >> ${DIRECTORY}/envvars
+echo DELAY_TIME=${DELAY_TIME} >> ${DIRECTORY}/envvars
+
+
+
+#end_long_comment
